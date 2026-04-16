@@ -143,57 +143,62 @@ namespace FileCompare
             return null;
         }
 
-        
+        // 화면의 양쪽 리스트를 최신 상태로 다시 불러오는 함수
+        private void RefreshLists()
+        {
+            // txtLeftDir와 txtRightDir는 경로가 입력된 텍스트박스 이름입니다.
+            PopulateListView(lvwLeftDir, txtLeftDir.Text);
+            PopulateListView(lvwRightDir, txtRightDir.Text);
+
+            // 만약 색상 비교 함수가 따로 있다면 여기서 같이 호출해줍니다.
+            // ApplyComparisonColors(); 
+        }
 
         // [왼쪽 -> 오른쪽 복사]
         private void btnCopyFromLeft_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(txtLeftDir.Text) || lvwLeftDir.SelectedItems.Count == 0) return;
+
+            foreach (ListViewItem item in lvwLeftDir.SelectedItems)
             {
-                // 1. 예외 체크: 경로가 비었거나 선택된 파일이 없는 경우
-                if (!Directory.Exists(txtLeftDir.Text) || lvwLeftDir.SelectedItems.Count == 0) return;
-        
-                // 2. 왼쪽 폴더의 실제 파일들을 가져옴
-                var files = new DirectoryInfo(txtLeftDir.Text).GetFiles();
-        
-                foreach (ListViewItem item in lvwLeftDir.SelectedItems)
+                string sourcePath = Path.Combine(txtLeftDir.Text, item.Text);
+                string destPath = Path.Combine(txtRightDir.Text, item.Text);
+
+                if (Directory.Exists(sourcePath)) // 폴더인 경우
                 {
-                    // 파일 이름으로 실제 파일 정보를 찾음
-                    var file = files.FirstOrDefault(f => f.Name == item.Text);
-                    if (file == null) continue;
-        
-                    string destPath = Path.Combine(txtRightDir.Text, file.Name);
-        
-                    // 3. 복사 실행 (확인 절차 포함)
-                    if (DoCopyFile(file.FullName, destPath))
-                    {
-                        // 복사 성공 시 화면 새로고침
-                        PopulateListView(lvwLeftDir, txtLeftDir.Text);
-                        PopulateListView(lvwRightDir, txtRightDir.Text);
-                    }
+                    CopyDirectory(sourcePath, destPath);
+                }
+                else if (File.Exists(sourcePath)) // 파일인 경우
+                {
+                    DoCopyFile(sourcePath, destPath);
                 }
             }
-        
-            // [오른쪽 -> 왼쪽 복사]
+            RefreshLists(); // 복사 후 양쪽 새로고침
+            //MessageBox.Show("복사 작업이 완료되었습니다!");
+        }
+        // [오른쪽 -> 왼쪽 복사]
         private void btnCopyFromRight_Click(object sender, EventArgs e)
         {
             if (!Directory.Exists(txtRightDir.Text) || lvwRightDir.SelectedItems.Count == 0) return;
-    
-            var files = new DirectoryInfo(txtRightDir.Text).GetFiles();
-    
+
             foreach (ListViewItem item in lvwRightDir.SelectedItems)
             {
-                var file = files.FirstOrDefault(f => f.Name == item.Text);
-                if (file == null) continue;
-    
-                string destPath = Path.Combine(txtLeftDir.Text, file.Name);
-    
-                if (DoCopyFile(file.FullName, destPath))
+                string sourcePath = Path.Combine(txtRightDir.Text, item.Text);
+                string destPath = Path.Combine(txtLeftDir.Text, item.Text);
+
+                if (Directory.Exists(sourcePath)) // 폴더인 경우
                 {
-                    PopulateListView(lvwLeftDir, txtLeftDir.Text);
-                    PopulateListView(lvwRightDir, txtRightDir.Text);
+                    CopyDirectory(sourcePath, destPath);
+                }
+                else if (File.Exists(sourcePath)) // 파일인 경우
+                {
+                    DoCopyFile(sourcePath, destPath);
                 }
             }
+            RefreshLists(); // 복사 후 양쪽 새로고침
+            //MessageBox.Show("복사 작업이 완료되었습니다!");
         }
-    
+
         // [공용 복사 로직: 날짜 비교 포함]
         private bool DoCopyFile(string srcPath, string destPath)
         {
@@ -224,5 +229,29 @@ namespace FileCompare
                 return false;
             }
         }
-}
+        // 폴더 통째로 복사하는 함수 (재귀)
+        private void CopyDirectory(string sourceDir, string destDir)
+        {
+            // 대상 폴더가 없으면 생성
+            Directory.CreateDirectory(destDir);
+
+            // 1. 모든 파일 복사
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string fileName = Path.GetFileName(file);
+                string destFile = Path.Combine(destDir, fileName);
+
+                // 파일 복사 (기존에 만든 DoCopyFile 활용하여 버전 체크 가능)
+                DoCopyFile(file, destFile);
+            }
+
+            // 2. 모든 하위 폴더 복사 (자기 자신을 다시 호출 - 재귀)
+            foreach (string directory in Directory.GetDirectories(sourceDir))
+            {
+                string dirName = Path.GetFileName(directory);
+                string destSubDir = Path.Combine(destDir, dirName);
+                CopyDirectory(directory, destSubDir);
+            }
+        }
+    }
 }
