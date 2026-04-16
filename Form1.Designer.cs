@@ -44,6 +44,12 @@
             btnRightDir = new Button();
             panel4 = new Panel();
             btnCopyFromRight = new Button();
+            LeftName = new ColumnHeader();
+            LeftSize = new ColumnHeader();
+            LeftDate = new ColumnHeader();
+            RightName = new ColumnHeader();
+            RightSize = new ColumnHeader();
+            RightDate = new ColumnHeader();
             panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -84,6 +90,7 @@
             btnLeftDir.TabIndex = 2;
             btnLeftDir.Text = "폴더선택";
             btnLeftDir.UseVisualStyleBackColor = true;
+            btnLeftDir.Click += btnLeftDir_Click;
             // 
             // splitContainer1
             // 
@@ -119,11 +126,15 @@
             // lvwLeftDir
             // 
             lvwLeftDir.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lvwLeftDir.Columns.AddRange(new ColumnHeader[] { LeftName, LeftSize, LeftDate });
+            lvwLeftDir.FullRowSelect = true;
+            lvwLeftDir.GridLines = true;
             lvwLeftDir.Location = new Point(8, 9);
             lvwLeftDir.Name = "lvwLeftDir";
             lvwLeftDir.Size = new Size(385, 262);
             lvwLeftDir.TabIndex = 0;
             lvwLeftDir.UseCompatibleStateImageBehavior = false;
+            lvwLeftDir.View = View.Details;
             // 
             // panel1
             // 
@@ -170,11 +181,15 @@
             // lvwRightDir
             // 
             lvwRightDir.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lvwRightDir.Columns.AddRange(new ColumnHeader[] { RightName, RightSize, RightDate });
+            lvwRightDir.FullRowSelect = true;
+            lvwRightDir.GridLines = true;
             lvwRightDir.Location = new Point(3, 9);
             lvwRightDir.Name = "lvwRightDir";
             lvwRightDir.Size = new Size(381, 262);
             lvwRightDir.TabIndex = 1;
             lvwRightDir.UseCompatibleStateImageBehavior = false;
+            lvwRightDir.View = View.Details;
             // 
             // panel5
             // 
@@ -204,6 +219,7 @@
             btnRightDir.TabIndex = 4;
             btnRightDir.Text = "폴더선택";
             btnRightDir.UseVisualStyleBackColor = true;
+            btnRightDir.Click += btnRightDir_Click;
             // 
             // panel4
             // 
@@ -224,6 +240,36 @@
             btnCopyFromRight.TabIndex = 2;
             btnCopyFromRight.Text = "<<<";
             btnCopyFromRight.UseVisualStyleBackColor = true;
+            // 
+            // LeftName
+            // 
+            LeftName.Text = "이름";
+            LeftName.Width = 100;
+            // 
+            // LeftSize
+            // 
+            LeftSize.Text = "크기";
+            LeftSize.Width = 100;
+            // 
+            // LeftDate
+            // 
+            LeftDate.Text = "수정한 날짜";
+            LeftDate.Width = 160;
+            // 
+            // RightName
+            // 
+            RightName.Text = "이름";
+            RightName.Width = 100;
+            // 
+            // RightSize
+            // 
+            RightSize.Text = "크기";
+            RightSize.Width = 100;
+            // 
+            // RightDate
+            // 
+            RightDate.Text = "수정한 날짜";
+            RightDate.Width = 160;
             // 
             // Form1
             // 
@@ -268,5 +314,11 @@
         private TextBox txtRightDir;
         private Button btnRightDir;
         private Button btnCopyFromRight;
+        private ColumnHeader LeftName;
+        private ColumnHeader LeftSize;
+        private ColumnHeader LeftDate;
+        private ColumnHeader RightName;
+        private ColumnHeader RightSize;
+        private ColumnHeader RightDate;
     }
 }
