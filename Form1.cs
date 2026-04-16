@@ -1,3 +1,6 @@
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 namespace FileCompare
 {
     public partial class Form1 : Form
@@ -140,16 +143,86 @@ namespace FileCompare
             return null;
         }
 
-        // 왼쪽에서 오른쪽으로 복사
-        private void btnCopyFromLeft_Click(object sender, EventArgs e)
-        {
-           
-        }
+        
 
-        // 오른쪽에서 왼쪽으로 복사
+        // [왼쪽 -> 오른쪽 복사]
+        private void btnCopyFromLeft_Click(object sender, EventArgs e)
+            {
+                // 1. 예외 체크: 경로가 비었거나 선택된 파일이 없는 경우
+                if (!Directory.Exists(txtLeftDir.Text) || lvwLeftDir.SelectedItems.Count == 0) return;
+        
+                // 2. 왼쪽 폴더의 실제 파일들을 가져옴
+                var files = new DirectoryInfo(txtLeftDir.Text).GetFiles();
+        
+                foreach (ListViewItem item in lvwLeftDir.SelectedItems)
+                {
+                    // 파일 이름으로 실제 파일 정보를 찾음
+                    var file = files.FirstOrDefault(f => f.Name == item.Text);
+                    if (file == null) continue;
+        
+                    string destPath = Path.Combine(txtRightDir.Text, file.Name);
+        
+                    // 3. 복사 실행 (확인 절차 포함)
+                    if (DoCopyFile(file.FullName, destPath))
+                    {
+                        // 복사 성공 시 화면 새로고침
+                        PopulateListView(lvwLeftDir, txtLeftDir.Text);
+                        PopulateListView(lvwRightDir, txtRightDir.Text);
+                    }
+                }
+            }
+        
+            // [오른쪽 -> 왼쪽 복사]
         private void btnCopyFromRight_Click(object sender, EventArgs e)
         {
-
+            if (!Directory.Exists(txtRightDir.Text) || lvwRightDir.SelectedItems.Count == 0) return;
+    
+            var files = new DirectoryInfo(txtRightDir.Text).GetFiles();
+    
+            foreach (ListViewItem item in lvwRightDir.SelectedItems)
+            {
+                var file = files.FirstOrDefault(f => f.Name == item.Text);
+                if (file == null) continue;
+    
+                string destPath = Path.Combine(txtLeftDir.Text, file.Name);
+    
+                if (DoCopyFile(file.FullName, destPath))
+                {
+                    PopulateListView(lvwLeftDir, txtLeftDir.Text);
+                    PopulateListView(lvwRightDir, txtRightDir.Text);
+                }
+            }
+        }
+    
+        // [공용 복사 로직: 날짜 비교 포함]
+        private bool DoCopyFile(string srcPath, string destPath)
+        {
+            try
+            {
+                if (File.Exists(destPath))
+                {
+                    DateTime srcTime = File.GetLastWriteTime(srcPath);
+                    DateTime destTime = File.GetLastWriteTime(destPath);
+    
+                    // 대상 파일이 더 최신인 경우 질문
+                    if (srcTime < destTime)
+                    {
+                        var result = MessageBox.Show(
+                            $"{Path.GetFileName(destPath)} 파일이 대상에 더 최신 버전으로 있습니다. 덮어쓰시겠습니까?",
+                            "버전 경고", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+    
+                        if (result == DialogResult.No) return false;
+                    }
+                }
+    
+                File.Copy(srcPath, destPath, true); // 복사 실행
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("복사 중 오류 발생: " + ex.Message);
+                return false;
+            }
         }
 }
 }
